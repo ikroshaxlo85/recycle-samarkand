@@ -54,7 +54,7 @@
 
 <script>
   const supabaseUrl = "https://ksikszqgksntfqjzhlqp.supabase.co";
-  const supabaseKey = sb_publishable_RPMytDo2Bl7xVrxWSo5vjw_x8kBXFI7
+  const supabaseKey = "sb_publishable_RPMytDo2Bl7xVrxWSo5vjw_x8kBXFI7";
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
   const authBox = document.getElementById("authBox");
@@ -107,7 +107,6 @@
     showMessage("Вы вышли из системы", "success");
   }
 
-  // Проверка активной сессии
   supabase.auth.getSession().then(({ data }) => {
     if (data.session) {
       userEmail.innerText = "Вы вошли как: " + data.session.user.email;
