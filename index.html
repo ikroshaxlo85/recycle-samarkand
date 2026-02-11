@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Recycle Plant System</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+  <h2>Recycle Plant System</h2>
+
+  <div id="login">
+    <h3>Login</h3>
+    <input id="email" placeholder="Email" /><br><br>
+    <input id="password" type="password" placeholder="Password" /><br><br>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="panel" style="display:none;">
+    <h3>Incoming Equipment</h3>
+    <input id="date" type="date"><br><br>
+    <input id="supplier" placeholder="Supplier"><br><br>
+    <input id="type" placeholder="Equipment type"><br><br>
+    <input id="weight" placeholder="Weight kg"><br><br>
+    <input id="qty" placeholder="Quantity"><br><br>
+    <button onclick="addIncoming()">Add</button>
+    <br><br>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+<script>
+const supabase = supabase.createClient(
+  "https://ksikszqgksntfqjzhlqp.supabase.co",
+  "sb_publishable_RPMytDo2Bl7xVrxWSo5vjw_x8kBXFI7"
+);
+
+async function login() {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: document.getElementById("email").value,
+    password: document.getElementById("password").value
+  });
+
+  if (!error) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+  } else {
+    alert("Login error");
+  }
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+async function addIncoming() {
+  await supabase.from("incoming_equipment").insert([{
+    date: document.getElementById("date").value,
+    supplier: document.getElementById("supplier").value,
+    equipment_type: document.getElementById("type").value,
+    weight_kg: document.getElementById("weight").value,
+    quantity: document.getElementById("qty").value
+  }]);
+  alert("Saved");
+}
+</script>
+
+</body>
+</html>
