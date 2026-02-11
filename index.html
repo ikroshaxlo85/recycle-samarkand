@@ -1,66 +1,147 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Recycle Plant System</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<meta charset="UTF-8">
+<title>Recycle System</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<style>
+body { font-family: Arial; margin: 30px; }
+button { margin: 5px; padding: 8px; }
+input { margin: 5px; padding: 5px; }
+.section { display:none; margin-top:20px; }
+</style>
 </head>
 <body>
-  <h2>Recycle Plant System</h2>
 
-  <div id="login">
-    <h3>Login</h3>
-    <input id="email" placeholder="Email" /><br><br>
-    <input id="password" type="password" placeholder="Password" /><br><br>
-    <button onclick="login()">Login</button>
-  </div>
+<h2>♻ Recycle Plant System</h2>
 
-  <div id="panel" style="display:none;">
-    <h3>Incoming Equipment</h3>
-    <input id="date" type="date"><br><br>
-    <input id="supplier" placeholder="Supplier"><br><br>
-    <input id="type" placeholder="Equipment type"><br><br>
-    <input id="weight" placeholder="Weight kg"><br><br>
-    <input id="qty" placeholder="Quantity"><br><br>
-    <button onclick="addIncoming()">Add</button>
-    <br><br>
-    <button onclick="logout()">Logout</button>
-  </div>
+<div id="login">
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button onclick="login()">Login</button>
+</div>
+
+<div id="main" style="display:none;">
+
+<button onclick="show('incoming')">Поступление</button>
+<button onclick="show('output')">Разборка</button>
+<button onclick="show('sales')">Продажа</button>
+<button onclick="show('balance')">Остатки</button>
+<button onclick="logout()">Выход</button>
+
+<div id="incoming" class="section">
+<h3>Поступление техники</h3>
+<input id="i_date" type="date">
+<input id="i_supplier" placeholder="Поставщик">
+<input id="i_type" placeholder="Тип техники">
+<input id="i_weight" placeholder="Вес кг">
+<input id="i_qty" placeholder="Кол-во">
+<button onclick="addIncoming()">Сохранить</button>
+</div>
+
+<div id="output" class="section">
+<h3>Выход сырья</h3>
+<input id="o_date" type="date">
+<input id="o_type" placeholder="Тип техники">
+<input id="metal_black" placeholder="Черный металл кг">
+<input id="metal_color" placeholder="Цветной металл кг">
+<input id="plastic" placeholder="Пластик кг">
+<input id="other" placeholder="Другое кг">
+<button onclick="addOutput()">Сохранить</button>
+</div>
+
+<div id="sales" class="section">
+<h3>Продажа сырья</h3>
+<input id="s_date" type="date">
+<input id="s_type" placeholder="Тип сырья">
+<input id="s_qty" placeholder="Количество кг">
+<button onclick="addSale()">Сохранить</button>
+</div>
+
+<div id="balance" class="section">
+<h3>Остатки сырья</h3>
+<button onclick="loadBalance()">Обновить</button>
+<div id="balance_data"></div>
+</div>
+
+</div>
 
 <script>
 const supabase = supabase.createClient(
-  "https://ksikszqgksntfqjzhlqp.supabase.co",
-  "sb_publishable_RPMytDo2Bl7xVrxWSo5vjw_x8kBXFI7"
+"https://ksikszqgksntfqjzhlqp.supabase.co",
+"sb_publishable_RPMytDo2Bl7xVrxWSo5vjw_x8kBXFI7"
 );
 
-async function login() {
-  const { error } = await supabase.auth.signInWithPassword({
-    email: document.getElementById("email").value,
-    password: document.getElementById("password").value
-  });
-
-  if (!error) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-  } else {
-    alert("Login error");
-  }
+function show(id){
+document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+document.getElementById(id).style.display='block';
 }
 
-async function logout() {
-  await supabase.auth.signOut();
-  location.reload();
+async function login(){
+const { error } = await supabase.auth.signInWithPassword({
+email: email.value,
+password: password.value
+});
+if(!error){
+login.style.display="none";
+main.style.display="block";
+}else{
+alert("Ошибка входа");
+}
 }
 
-async function addIncoming() {
-  await supabase.from("incoming_equipment").insert([{
-    date: document.getElementById("date").value,
-    supplier: document.getElementById("supplier").value,
-    equipment_type: document.getElementById("type").value,
-    weight_kg: document.getElementById("weight").value,
-    quantity: document.getElementById("qty").value
-  }]);
-  alert("Saved");
+async function logout(){
+await supabase.auth.signOut();
+location.reload();
+}
+
+async function addIncoming(){
+await supabase.from("incoming_equipment").insert([{
+date:i_date.value,
+supplier:i_supplier.value,
+equipment_type:i_type.value,
+weight_kg:i_weight.value,
+quantity:i_qty.value
+}]);
+alert("Сохранено");
+}
+
+async function addOutput(){
+await supabase.from("material_output").insert([{
+date:o_date.value,
+equipment_type:o_type.value,
+metal_black:metal_black.value,
+metal_color:metal_color.value,
+plastic:plastic.value,
+other:other.value
+}]);
+alert("Сохранено");
+}
+
+async function addSale(){
+await supabase.from("material_sales").insert([{
+date:s_date.value,
+material_type:s_type.value,
+quantity_kg:s_qty.value
+}]);
+alert("Сохранено");
+}
+
+async function loadBalance(){
+const { data } = await supabase.from("material_output").select("*");
+let totalBlack=0,totalColor=0,totalPlastic=0,totalOther=0;
+data.forEach(r=>{
+totalBlack+=Number(r.metal_black);
+totalColor+=Number(r.metal_color);
+totalPlastic+=Number(r.plastic);
+totalOther+=Number(r.other);
+});
+balance_data.innerHTML = `
+Черный металл: ${totalBlack} кг <br>
+Цветной металл: ${totalColor} кг <br>
+Пластик: ${totalPlastic} кг <br>
+Другое: ${totalOther} кг
+`;
 }
 </script>
 
