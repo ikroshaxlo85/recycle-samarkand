@@ -1,61 +1,8 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Recycle Samarkand</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .box {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      width: 300px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-    .error { color: red; margin-top: 10px; }
-    .success { color: green; margin-top: 10px; }
-  </style>
-</head>
-<body>
-
-<div class="box" id="authBox">
-  <h2>Вход</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Пароль">
-  <button onclick="login()">Войти</button>
-  <button onclick="register()">Регистрация</button>
-  <div id="message"></div>
-</div>
-
-<div class="box" id="appBox" style="display:none;">
-  <h2>Добро пожаловать!</h2>
-  <p id="userEmail"></p>
-  <button onclick="logout()">Выйти</button>
-</div>
-
 <script>
   const supabaseUrl = "https://ksikszqgksntfqjzhlqp.supabase.co";
   const supabaseKey = "sb_publishable_RPMytDo2Bl7xVrxWSo5vjw_x8kBXFI7";
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  const client = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   const authBox = document.getElementById("authBox");
   const appBox = document.getElementById("appBox");
@@ -70,7 +17,7 @@
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await client.auth.signUp({
       email,
       password
     });
@@ -78,7 +25,7 @@
     if (error) {
       showMessage(error.message, "error");
     } else {
-      showMessage("Регистрация успешна! Теперь войдите.", "success");
+      showMessage("Регистрация успешна. Теперь выполните вход.", "success");
     }
   }
 
@@ -86,7 +33,7 @@
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await client.auth.signInWithPassword({
       email,
       password
     });
@@ -101,13 +48,13 @@
   }
 
   async function logout() {
-    await supabase.auth.signOut();
+    await client.auth.signOut();
     authBox.style.display = "block";
     appBox.style.display = "none";
     showMessage("Вы вышли из системы", "success");
   }
 
-  supabase.auth.getSession().then(({ data }) => {
+  client.auth.getSession().then(({ data }) => {
     if (data.session) {
       userEmail.innerText = "Вы вошли как: " + data.session.user.email;
       authBox.style.display = "none";
@@ -115,6 +62,3 @@
     }
   });
 </script>
-
-</body>
-</html>
